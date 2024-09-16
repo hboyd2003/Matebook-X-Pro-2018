@@ -1,0 +1,60 @@
+;/*++
+;
+;Module Name:
+;
+;    Mach.INF
+;
+;Abstract:
+;    INF file for firmware driver package
+;
+;--*/
+[Version]
+Signature   = "$WINDOWS NT$"
+Provider    = %Provider%
+Class       = Firmware
+ClassGuid   = {f2e7dd72-6468-4e36-b6f1-6488f42c1b52}
+DriverVer   = 03/21/2018,0.1.0.8
+CatalogFile = BIOS_Capsule.CAT
+PnpLockdown = 1
+
+[Manufacturer]
+%MfgName% = Firmware,NTx86,NTamd64
+
+[Firmware.NTx86]
+%FirmwareDesc% = Firmware_Install,UEFI\RES_{085C293A-051A-4CC2-B0A5-0DDB7105FDBF}
+
+[Firmware.NTamd64]
+%FirmwareDesc% = Firmware_Install,UEFI\RES_{085C293A-051A-4CC2-B0A5-0DDB7105FDBF}
+
+
+[Firmware_Install.NT]
+CopyFiles = Firmware_CopyFiles
+
+[Firmware_CopyFiles]
+BIOS_Capsule.FD
+
+[Firmware_Install.NT.Hw]
+AddReg = Firmware_AddReg
+
+[Firmware_AddReg]
+HKR,,FirmwareId,,{085C293A-051A-4CC2-B0A5-0DDB7105FDBF}
+HKR,,FirmwareVersion,%REG_DWORD%,0x00010008
+HKR,,FirmwareFilename,,BIOS_Capsule.FD
+
+[SourceDisksNames]
+1 = %DiskName%
+
+[SourceDisksFiles]
+BIOS_Capsule.FD = 1
+
+[DestinationDirs]
+DefaultDestDir = %DIRID_WINDOWS%,Firmware ; %SystemRoot%\Firmware
+
+[Strings]
+Provider     = "HUAWEI" 
+MfgName      = "HUAWEI" 
+FirmwareDesc = "HUAWEI System Firmware"
+DiskName     = "Firmware Update"
+
+DIRID_WINDOWS = 10
+REG_DWORD     = 0x00010001

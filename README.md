@@ -10,6 +10,8 @@ The bios modifications lasts until reboot though settings are saved.
 This unlock/mod uses [SmokelessRuntimeEFIPatcher](https://github.com/hboyd2003/SmokelessRuntimeEFIPatcher)(SREP) which uses the `SREP_Config.cfg` to patch the BIOS.
 [SmokelessRuntimeEFIPatcher](https://github.com/hboyd2003/SmokelessRuntimeEFIPatcher) is a (unsigned) EFI binary and can be ran using any standard method.
 
+The mod should be compatible with different BIOS versions as long as the SetupUtilityApp DXE has not changed. I have tested it with 1.30 and 1.37. Using Inysde's H20 EZE, you can compare a BIOS version to know if the DXE has changed or simply try running it.
+
 The `SREP_Config.cfg` file must be in the root of the drive where [SmokelessRuntimeEFIPatcher](https://github.com/hboyd2003/SmokelessRuntimeEFIPatcher) is ran from.
 
 To boot from a USB drive:
@@ -20,6 +22,42 @@ To boot from a USB drive:
     EFI\boot\BOOTX64.efi
 ```
 3. Boot the USB drive
+
+### How
+When booting into the Insyde BIOS it must determine what "forms" (the pages or submenus you see in the BIOS) to load/display. In the SetupUtilityApp DXE, you find this:
+<details>
+  <summary>ASM</summary>
+	
+```ASM
+CMP		BL,0x1
+JNZ		LAB_8000099c
+LEA		RDI,[OriginalMainGUID]
+MOV		RBX,RAX
+LAB_8000099c:
+	LEA	RDI,[CustumMainGUID]
+	MOV	RBX,param_1
+```
+ 
+</details>
+Disassembled C:
+
+```C
+  if (local_res18 == '\x01') {
+    pGVar9 = &OriginalMainGUID;
+    pcVar7 = &DAT_80002820;
+  }
+  else {
+    pGVar9 = &CustomMainGUID;
+    pcVar7 = &DAT_80002848;
+  }
+```
+
+All it does it choose between using Insyde's default main page or Huawei's custom main page.
+By default it will always choose Huawei's custom main page. To force it to choose the default main page we can patch the jump instructon from a JNZ to a JZ.
+Subsequently the BIOS will then load Insyde's default main page and for unknown reasons it will also load all the other pages fully unlocking the BIOS.
+
+### Limitations
+This is a runtime mod, as such, it lasts until the system is rebooted, however, settings changed are saved and stay in effect. It may be possible to fully patch or swap BIOS drivers or even the CPU's microcode but I have not tried it.
 
 # Power Config
 > [!WARNING]
